@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hwua.ssm.mapper.UserMapper">
+
+    <resultMap id="queryResultMap" type="user">
+        <id column="dbid" property="dbid"/>
+    </resultMap>
+    <select id="query" parameterType="map" resultMap="queryResultMap">
+        SELECT * FROM user WHERE 1 = 1
+        <if test="userName != null">
+            AND userName LIKE CONCAT('%',#{userName},'%')
+        </if>
+        <if test="realName != null">
+            AND realName = #{realName}
+        </if>
+        <if test="valid != null">
+            AND valid = #{valid}
+        </if>
+        ORDER BY dbid
+        <if test="start != null &amp;&amp; rows != null">
+            LIMIT #{start},#{rows}
+        </if>
+    </select>
+
+    <select id="queryCount" parameterType="map" resultType="int">
+        SELECT COUNT(dbid) FROM user WHERE 1=1
+        <if test="userName != null">
+            AND userName LIKE CONCAT('%',#{userName},'%')
+        </if>
+        <if test="realName != null">
+            AND realName = #{realName}
+        </if>
+        <if test="valid != null">
+            AND valid = #{valid}
+        </if>
+    </select>
+
+    <insert id="doInsert" parameterType="user">
+        INSERT INTO user (userName,password,realName,valid) VALUES (#{userName},#{password},#{realName},#{valid})
+    </insert>
+
+    <update id="doUpdate" parameterType="user">
+        UPDATE user SET userName=#{userName},password=#{password},realName=#{realName},valid=#{valid} WHERE dbid=#{dbid}
+    </update>
+
+    <delete id="deleteByUserId" parameterType="int">
+        DELETE FROM user_role WHERE userId=#{userId}
+    </delete>
+
+    <insert id="insertRole" parameterType="list">
+        INSERT INTO user_role (userId, roleId) VALUES
+        <foreach collection="list" item="row" separator=",">
+            (#{row.userId},#{row.roleId})
+        </foreach>
+    </insert>
+
+    <select id="queryUser" parameterType="user" resultType="user">
+        SELECT * FROM user WHERE 1=1
+        <if test="userName != null">
+            AND userName=#{userName}
+        </if>
+        <if test="password != null">
+            AND password=#{password}
+        </if>
+    </select>
+
+    <select id="queryByUserName" parameterType="string" resultType="user">
+        SELECT * FROM user WHERE userName=#{userName}
+    </select>
+
+    <update id="updatepwd" parameterType="user">
+        UPDATE user SET password=#{password} WHERE dbid=#{dbid}
+    </update>
+
+</mapper>

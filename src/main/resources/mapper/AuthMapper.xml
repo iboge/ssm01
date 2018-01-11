@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hwua.ssm.mapper.AuthMapper">
+
+    <resultMap id="queryByDbidResultMap" type="auth">
+        <id column="dbid" property="dbid"/>
+        <!--
+            - select：需要递归执行的sql
+            - column：递归执行的sql所需要的参数
+        -->
+        <collection property="children" ofType="auth" select="queryByDbid" column="dbid"/>
+    </resultMap>
+    <select id="queryByDbid" parameterType="int" resultMap="queryByDbidResultMap">
+        SELECT * FROM auth WHERE parentId = #{dbid}
+    </select>
+    <update id="doUpdate" parameterType="auth">
+        UPDATE auth SET authName=#{authName},authCode=#{authCode},authURL=#{authURL},type=#{type},
+        parentId=#{parentId},orders=#{orders},valid=#{valid},layer=#{layer} WHERE dbid=#{dbid}
+    </update>
+    <insert id="doInsert" parameterType="auth">
+        INSERT INTO auth (authName,authCode,authURL,type,parentId,orders,valid,layer)
+         VALUES (#{authName},#{authCode},#{authURL},#{type},#{parentId},#{orders},#{valid},#{layer})
+    </insert>
+
+    <resultMap id="queryValidResultMap" type="map">
+        <id column="id" property="id"/>
+        <result column="text" property="text"/>
+        <collection property="children" ofType="map" select="queryValid" column="id"/>
+    </resultMap>
+    <select id="queryValid" parameterType="int" resultMap="queryValidResultMap">
+        SELECT dbid id,authName text FROM auth WHERE parentId = #{dbid} AND valid = 1
+    </select>
+
+    <select id="queryByRoleId" parameterType="int" resultType="int">
+        SELECT authId FROM role_auth WHERE roleId=#{id}
+    </select>
+
+    <select id="queryByUserId" parameterType="int" resultType="auth">
+        SELECT DISTINCT auth.*,auth.dbid id,auth.authName text
+        FROM user_role,role_auth,auth
+        WHERE user_role.roleId=role_auth.roleId
+        AND role_auth.authId=auth.dbid
+        AND userId=#{userId}
+        AND layer>0
+        AND type=1;
+    </select>
+
+    <select id="queryUserAuth" parameterType="int" resultType="auth">
+        SELECT DISTINCT auth.*
+        FROM user_role,role_auth,auth
+        WHERE user_role.roleId=role_auth.roleId
+        AND role_auth.authId=auth.dbid
+        AND userId=#{userId};
+    </select>
+
+</mapper>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hwua.ssm.mapper.RoleMapper">
+
+    <select id="query" parameterType="map" resultType="role">
+        SELECT * FROM role WHERE 1 = 1
+        <if test="roleName != null">
+            AND roleName LIKE CONCAT('%',#{roleName},'%')
+        </if>
+        <if test="roleCode != null">
+            AND roleCode = #{roleCode}
+        </if>
+        <if test="valid != null">
+            AND valid = #{valid}
+        </if>
+        ORDER BY orders
+        <if test="rows != null &amp;&amp; start != null">
+            LIMIT #{start} ,#{rows}
+        </if>
+    </select>
+
+    <select id="queryCount" parameterType="map" resultType="int">
+        SELECT COUNT(dbid) FROM role WHERE 1 = 1
+        <if test="roleName != null">
+            AND roleName LIKE CONCAT('%',#{roleName},'%')
+        </if>
+        <if test="roleCode != null">
+            AND roleCode = #{roleCode}
+        </if>
+        <if test="valid != null">
+            AND valid = #{valid}
+        </if>
+    </select>
+
+    <insert id="doInsert" parameterType="role">
+        INSERT INTO role (roleName, roleCode, valid, orders) VALUES (#{roleName},#{roleCode},#{valid},#{orders})
+    </insert>
+
+    <update id="doUpdate" parameterType="role">
+        UPDATE role SET roleName=#{roleName},roleCode=#{roleCode},valid=#{valid},orders=#{orders} WHERE dbid=#{dbid}
+    </update>
+
+    <resultMap id="queryValidResultMap" type="map">
+        <id column="id" property="id"/>
+        <result column="rname" property="rname"/>
+        <result column="rcode" property="rcode"/>
+    </resultMap>
+    <select id="queryValid" resultMap="queryValidResultMap">
+        SELECT dbid id,roleName rname,roleCode rcode FROM role WHERE valid=1
+    </select>
+
+    <select id="queryByUserId" parameterType="int" resultType="int">
+        SELECT roleId FROM user_role WHERE userId=#{id}
+    </select>
+
+    <delete id="deleteByRoleId" parameterType="int">
+        DELETE FROM role_auth WHERE roleId=#{roleId}
+    </delete>
+
+    <insert id="insertAuth" parameterType="list">
+        INSERT INTO role_auth (roleId, authId) VALUES
+        <foreach collection="list" item="row" separator=",">
+            (#{row.roleId},#{row.authId})
+        </foreach>
+    </insert>
+
+</mapper>
